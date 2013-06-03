@@ -44,6 +44,10 @@ public class CacheableImageView extends ImageView {
         super(context, attrs);
     }
     
+    public CacheableImageView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+    }
+
     @Override
     public void setImageBitmap(Bitmap bm) {
     	throw new IllegalArgumentException("Do not use setImageBitmap on CacheableImageView otherwise the content is not cached");
