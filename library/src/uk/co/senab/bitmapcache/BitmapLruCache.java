@@ -18,6 +18,7 @@ package uk.co.senab.bitmapcache;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -588,6 +589,7 @@ public class BitmapLruCache {
         return null;
     }
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private boolean addInBitmapOptions(InputStreamProvider ip, BitmapFactory.Options opts) {
         // Create InputStream for decoding the bounds
         final InputStream is = ip.getInputStream();
