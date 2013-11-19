@@ -413,25 +413,32 @@ public class BitmapLruCache {
     }
 
     /**
-     * Caches resulting bitmap from {@code inputStream} for {@code url} into all enabled caches.
-     * This version of the method should be preferred as it allows the original image contents to be
-     * cached, rather than a re-compressed version. <p /> The contents of the InputStream will be
-     * copied to a temporary file, then the file will be decoded into a Bitmap, using the optional
-     * <code>decodeOpts</code>. Providing the decode worked: <ul> <li>If the memory cache is
-     * enabled, the decoded Bitmap will be cached to memory.</li> <li>If the disk cache is enabled,
-     * the contents of the original stream will be cached to disk.</li> </ul> <p/> You should not
-     * call this method from the main/UI thread.
-     *
-     * @param url         - String representing the URL of the image
-	 * @param data        - Raw data opened from {@code url}
-	 * @param decodeOpts  - Options used for decoding. This does not affect what is cached in the
-	 *                    disk cache (if enabled).
-	 * @return CacheableBitmapDrawable which can be used to display the bitmap.
-	 */
-	public CacheableBitmapDrawable put(final String url, final byte[] data,
-			final BitmapFactory.Options decodeOpts) {
-		checkNotOnMainThread();
-		
+     * Caches resulting bitmap from {@code data} for {@code url} into all
+     * enabled caches. This version of the method should be preferred as it
+     * allows the original image contents to be cached, rather than a
+     * re-compressed version.
+     * <p />
+     * The contents of the array will be decoded into a Bitmap, using the
+     * optional <code>decodeOpts</code>. Providing the decode worked:
+     * <ul>
+     * <li>If the memory cache is enabled, the decoded Bitmap will be cached to
+     * memory.</li>
+     * <li>If the disk cache is enabled, a temporay version of the contents is
+     * copied to disk before decoding and then cached to disk.</li>
+     * </ul>
+     * <p/>
+     * You should not call this method from the main/UI thread.
+     * 
+     * @param url - String representing the URL of the image
+     * @param data - Raw data opened from {@code url}
+     * @param decodeOpts - Options used for decoding. This does not affect what
+     *            is cached in the disk cache (if enabled).
+     * @return CacheableBitmapDrawable which can be used to display the bitmap.
+     */
+    public CacheableBitmapDrawable put(final String url, final byte[] data,
+            final BitmapFactory.Options decodeOpts) {
+        checkNotOnMainThread();
+
         if (null == mDiskCache) {
             // shortcut to avoid temporary storage on disk
             CacheableBitmapDrawable d = decodeBitmap(new ByteArrayInputStreamProvider(data), url,
@@ -444,21 +451,29 @@ public class BitmapLruCache {
                 return d;
             }
         }
-		
-		return put(url, new ByteArrayInputStream(data), decodeOpts);
-	}
 
-	/**
-	 * Caches resulting bitmap from {@code inputStream} for {@code url} into all enabled caches.
-	 * This version of the method should be preferred as it allows the original image contents to be
-	 * cached, rather than a re-compressed version. <p /> The contents of the InputStream will be
-	 * copied to a temporary file, then the file will be decoded into a Bitmap, using the optional
-	 * <code>decodeOpts</code>. Providing the decode worked: <ul> <li>If the memory cache is
-	 * enabled, the decoded Bitmap will be cached to memory.</li> <li>If the disk cache is enabled,
-	 * the contents of the original stream will be cached to disk.</li> </ul> <p/> You should not
-	 * call this method from the main/UI thread.
-	 *
-	 * @param url         - String representing the URL of the image
+        return put(url, new ByteArrayInputStream(data), decodeOpts);
+    }
+
+    /**
+     * Caches resulting bitmap from {@code inputStream} for {@code url} into all
+     * enabled caches. This version of the method should be preferred as it
+     * allows the original image contents to be cached, rather than a
+     * re-compressed version.
+     * <p />
+     * The contents of the InputStream will be copied to a temporary file, then
+     * the file will be decoded into a Bitmap, using the optional
+     * <code>decodeOpts</code>. Providing the decode worked:
+     * <ul>
+     * <li>If the memory cache is enabled, the decoded Bitmap will be cached to
+     * memory.</li>
+     * <li>If the disk cache is enabled, the contents of the original stream
+     * will be cached to disk.</li>
+     * </ul>
+     * <p/>
+     * You should not call this method from the main/UI thread.
+     * 
+     * @param url - String representing the URL of the image
      * @param inputStream - InputStream opened from {@code url}
      * @param decodeOpts  - Options used for decoding. This does not affect what is cached in the
      *                    disk cache (if enabled).
