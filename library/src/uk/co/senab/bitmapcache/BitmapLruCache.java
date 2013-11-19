@@ -937,7 +937,7 @@ public class BitmapLruCache {
         /**
          * Do Not Use this, doesn't work with
          * {@link BitmapFactory#decodeStream(InputStream, android.graphics.Rect, android.graphics.BitmapFactory.Options)
-         * BitmapFactory.decodeStream} with an {@link InputStream}
+         * BitmapFactory.decodeStream} with an {@link ByteArrayInputStream}
          */
         @Override
         public InputStream getInputStream() {
