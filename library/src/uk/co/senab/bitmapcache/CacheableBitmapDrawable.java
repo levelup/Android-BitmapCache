@@ -22,6 +22,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.util.DebugUtils;
 import android.util.Log;
 
 public class CacheableBitmapDrawable extends BitmapDrawable {
@@ -239,6 +240,16 @@ public class CacheableBitmapDrawable extends BitmapDrawable {
                         Constants.UNUSED_DRAWABLE_RECYCLE_DELAY_MS);
             }
         }
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder out = new StringBuilder(64);
+        DebugUtils.buildShortClassTag(this, out);
+        out.append(" url:");
+        out.append(mUrl);
+        out.append('}');
+        return out.toString();
     }
 
     /**
