@@ -413,6 +413,23 @@ public class BitmapLruCache {
     }
 
     /**
+     * Caches resulting bitmap from {@code inputStream} for {@code url} into all enabled caches.
+     * This version of the method should be preferred as it allows the original image contents to be
+     * cached, rather than a re-compressed version. <p /> The contents of the InputStream will be
+     * copied to a temporary file, then the file will be decoded into a Bitmap. Providing the decode
+     * worked: <ul> <li>If the memory cache is enabled, the decoded Bitmap will be cached to
+     * memory.</li> <li>If the disk cache is enabled, the contents of the original stream will be
+     * cached to disk.</li> </ul> <p/> You should not call this method from the main/UI thread.
+     *
+     * @param url         - String representing the URL of the image
+     * @param srcfile - Source file corresponding to {@code url}
+     * @return CacheableBitmapDrawable which can be used to display the bitmap.
+     */
+    public CacheableBitmapDrawable put(final String url, final File srcfile) {
+        return put(url, srcfile, null);
+    }
+
+    /**
      * Caches resulting bitmap from {@code data} for {@code url} into all
      * enabled caches. This version of the method should be preferred as it
      * allows the original image contents to be cached, rather than a
@@ -499,34 +516,70 @@ public class BitmapLruCache {
 
         if (null != tmpFile) {
             // Try and decode File
-            d = decodeBitmap(new FileInputStreamProvider(tmpFile), url, decodeOpts);
-
-            if (d != null) {
-                if (null != mMemoryCache) {
-                    d.setCached(true);
-                    mMemoryCache.put(d.getUrl(), d);
-                }
-
-                if (null != mDiskCache) {
-                    final String key = transformUrlForDiskCacheKey(url);
-                    final ReentrantLock lock = getLockForDiskCacheEdit(url);
-                    lock.lock();
-
-                    try {
-                        DiskLruCache.Editor editor = mDiskCache.edit(key);
-                        IoUtils.copy(tmpFile, editor.newOutputStream(0));
-                        editor.commit();
-                    } catch (IOException e) {
-                        Log.e(Constants.LOG_TAG, "Error writing to disk cache. URL: " + url, e);
-                    } finally {
-                        lock.unlock();
-                        scheduleDiskCacheFlush();
-                    }
-                }
-            }
+            d = put(url, tmpFile, decodeOpts);
 
             // Finally, delete the temporary file
             tmpFile.delete();
+        }
+
+        return d;
+    }
+
+    /**
+     * Caches resulting bitmap from {@code inputStream} for {@code url} into all
+     * enabled caches. This version of the method should be preferred as it
+     * allows the original image contents to be cached, rather than a
+     * re-compressed version.
+     * <p />
+     * The contents of the InputStream will be copied to a temporary file, then
+     * the file will be decoded into a Bitmap, using the optional
+     * <code>decodeOpts</code>. Providing the decode worked:
+     * <ul>
+     * <li>If the memory cache is enabled, the decoded Bitmap will be cached to
+     * memory.</li>
+     * <li>If the disk cache is enabled, the contents of the original stream
+     * will be cached to disk.</li>
+     * </ul>
+     * <p/>
+     * You should not call this method from the main/UI thread.
+     * 
+     * @param url - String representing the URL of the image
+     * @param srcFile - Source file corresponding to {@code url}
+     * @param decodeOpts  - Options used for decoding. This does not affect what is cached in the
+     *                    disk cache (if enabled).
+     * @return CacheableBitmapDrawable which can be used to display the bitmap.
+     */
+    public CacheableBitmapDrawable put(final String url, final File srcFile,
+            final BitmapFactory.Options decodeOpts) {
+        checkNotOnMainThread();
+
+        CacheableBitmapDrawable d = null;
+
+        // Try and decode File
+        d = decodeBitmap(new FileInputStreamProvider(srcFile), url, decodeOpts);
+
+        if (d != null) {
+            if (null != mMemoryCache) {
+                d.setCached(true);
+                mMemoryCache.put(d.getUrl(), d);
+            }
+
+            if (null != mDiskCache) {
+                final String key = transformUrlForDiskCacheKey(url);
+                final ReentrantLock lock = getLockForDiskCacheEdit(url);
+                lock.lock();
+
+                try {
+                    DiskLruCache.Editor editor = mDiskCache.edit(key);
+                    IoUtils.copy(srcFile, editor.newOutputStream(0));
+                    editor.commit();
+                } catch (IOException e) {
+                    Log.e(Constants.LOG_TAG, "Error writing to disk cache. URL: " + url, e);
+                } finally {
+                    lock.unlock();
+                    scheduleDiskCacheFlush();
+                }
+            }
         }
 
         return d;
